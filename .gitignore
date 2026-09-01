@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+venv/
+data/
+*.db
+.vercel/
+.system_generated/
+openrouter_key.txt

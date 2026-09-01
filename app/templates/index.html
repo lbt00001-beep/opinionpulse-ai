@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Opinion & Sentiment Intelligence Hub | MCP & OpenRouter</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+            },
+            darkbg: {
+              900: '#0b0f17',
+              800: '#111827',
+              700: '#1f2937',
+              600: '#374151'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Marked.js -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-darkbg-900 text-slate-100 min-h-screen font-sans antialiased selection:bg-brand-500 selection:text-white flex flex-col">
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-darkbg-900/85 border-b border-darkbg-700/60 transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 via-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-brand-500/20 text-white font-bold text-lg">
+          <i class="fa-solid fa-chart-pie"></i>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-brand-400 bg-clip-text text-transparent">
+            OpinionPulse AI
+          </h1>
+          <p class="text-[11px] text-slate-400 -mt-0.5 flex items-center gap-1.5 font-medium">
+            <span>MCP Multi-Source Harvester</span>
+            <span class="inline-block w-1 h-1 rounded-full bg-emerald-400"></span>
+            <span>OpenRouter Intelligence</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Quick Action Controls -->
+      <div class="flex items-center gap-3">
+        <!-- Active Model Pill -->
+        <button onclick="openSettingsModal()" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-darkbg-800 border border-darkbg-700 hover:border-brand-500/50 transition text-xs text-slate-300 group">
+          <i class="fa-solid fa-microchip text-brand-400 group-hover:rotate-12 transition-transform"></i>
+          <span class="text-slate-400">Modelo:</span>
+          <span id="navModelName" class="font-semibold text-white">Gemini 3.5 Flash Lite</span>
+        </button>
+
+        <!-- History Button -->
+        <button onclick="toggleHistoryDrawer()" class="p-2.5 rounded-lg bg-darkbg-800 border border-darkbg-700 hover:border-slate-600 hover:text-white text-slate-300 transition relative" title="Historial de Informes">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span id="historyBadge" class="hidden absolute -top-1 -right-1 w-2.5 h-2.5 bg-brand-500 rounded-full"></span>
+        </button>
+
+        <!-- Help / Guide Button -->
+        <button onclick="openHelpModal()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-darkbg-800 border border-darkbg-700 hover:border-brand-500/50 text-slate-200 hover:text-white font-medium text-xs transition shadow-sm" title="Guía y Ayuda">
+          <i class="fa-solid fa-circle-question text-brand-400"></i>
+          <span>Ayuda & Guía</span>
+        </button>
+
+        <!-- Settings Button -->
+        <button onclick="openSettingsModal()" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-medium text-xs transition shadow-md shadow-brand-600/30">
+          <i class="fa-solid fa-gear"></i>
+          <span>Ajustes & Claves</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+
+    <!-- Search Hero Banner -->
+    <section class="relative rounded-2xl bg-gradient-to-b from-darkbg-800/90 to-darkbg-800/40 border border-darkbg-700/60 p-6 md:p-8 backdrop-blur-sm shadow-xl">
+      <div class="max-w-3xl mx-auto text-center flex flex-col gap-3 mb-6">
+        <div class="inline-flex items-center gap-2 self-center px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs font-semibold uppercase tracking-wider">
+          <i class="fa-solid fa-satellite-dish animate-pulse"></i> Radar de Sentimiento y Estado de Opinión
+        </div>
+        <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white">
+          ¿Qué está pensando la gente sobre <span class="bg-gradient-to-r from-brand-400 to-indigo-400 bg-clip-text text-transparent">cualquier tema</span>?
+        </h2>
+        <p class="text-sm text-slate-400">
+          Analiza conversaciones en tiempo real en <strong>Reddit, X, Prensa y Medios Digitales</strong> y genera un informe de inteligencia ejecutiva con IA en segundos.
+        </p>
+      </div>
+
+      <!-- Search Input Form -->
+      <form id="searchForm" onsubmit="handleSearch(event)" class="max-w-3xl mx-auto flex flex-col gap-4">
+        <div class="relative flex items-center">
+          <i class="fa-solid fa-magnifying-glass absolute left-4 text-slate-400 text-lg"></i>
+          <input 
+            type="text" 
+            id="topicInput"
+            placeholder="Escribe una marca, producto, noticia o persona (ej. Lanzamiento DeepSeek V3, iPhone 17, Ley IA...)" 
+            class="w-full pl-12 pr-36 py-4 rounded-xl bg-darkbg-900/90 border border-darkbg-600 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 text-white placeholder-slate-500 text-sm md:text-base transition outline-none shadow-inner"
+            required
+            autocomplete="off"
+          >
+          <button 
+            type="submit" 
+            id="searchBtn"
+            class="absolute right-2 top-2 bottom-2 px-6 rounded-lg bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-semibold text-sm transition flex items-center gap-2 shadow-lg shadow-brand-600/30"
+          >
+            <span>Analizar</span>
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <!-- Channel Filter Switches & Suggestions -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-2 text-xs">
+          <!-- Sources checkboxes & Time Range -->
+          <div class="flex items-center flex-wrap gap-2 sm:gap-3 text-slate-300">
+            <span class="text-slate-500 font-medium">Fuentes:</span>
+            <label class="flex items-center gap-1.5 cursor-pointer bg-darkbg-900/60 px-2.5 py-1 rounded-md border border-darkbg-700/80 hover:border-slate-600 transition">
+              <input type="checkbox" id="sourceReddit" checked class="rounded border-slate-700 text-brand-600 focus:ring-brand-500">
+              <i class="fa-brands fa-reddit text-orange-500"></i> Reddit
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer bg-darkbg-900/60 px-2.5 py-1 rounded-md border border-darkbg-700/80 hover:border-slate-600 transition">
+              <input type="checkbox" id="sourceNews" checked class="rounded border-slate-700 text-brand-600 focus:ring-brand-500">
+              <i class="fa-solid fa-newspaper text-blue-400"></i> Medios / Prensa
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer bg-darkbg-900/60 px-2.5 py-1 rounded-md border border-darkbg-700/80 hover:border-slate-600 transition">
+              <input type="checkbox" id="sourceSocial" checked class="rounded border-slate-700 text-brand-600 focus:ring-brand-500">
+              <i class="fa-brands fa-x-twitter text-slate-300"></i> X & Redes
+            </label>
+
+            <!-- Time range select -->
+            <div class="flex items-center gap-1.5 bg-darkbg-900/80 px-2.5 py-1 rounded-md border border-brand-500/30 text-slate-200">
+              <i class="fa-solid fa-clock-rotate-left text-brand-400 text-xs"></i>
+              <span class="text-slate-400 font-medium">Periodo:</span>
+              <select id="timeRangeSelect" class="bg-transparent text-white text-xs outline-none cursor-pointer font-semibold">
+                <option value="all" class="bg-darkbg-800 text-white">Todo el histórico</option>
+                <option value="24h" class="bg-darkbg-800 text-white">Últimas 24 horas</option>
+                <option value="7d" class="bg-darkbg-800 text-white">Últimos 7 días</option>
+                <option value="30d" class="bg-darkbg-800 text-white">Último mes (30d)</option>
+                <option value="1y" class="bg-darkbg-800 text-white">Último año</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Quick suggestions chips -->
+          <div class="flex items-center gap-1.5 overflow-x-auto text-[11px] text-slate-400">
+            <span class="text-slate-500">Sugerencias:</span>
+            <button type="button" onclick="setQuery('Donald Trump')" class="px-2 py-0.5 rounded bg-darkbg-900/80 hover:bg-rose-500/20 hover:text-rose-300 border border-darkbg-700 transition">Donald Trump</button>
+            <button type="button" onclick="setQuery('Pedro Sánchez')" class="px-2 py-0.5 rounded bg-darkbg-900/80 hover:bg-rose-500/20 hover:text-rose-300 border border-darkbg-700 transition">Pedro Sánchez</button>
+            <button type="button" onclick="setQuery('Alberto Núñez Feijóo')" class="px-2 py-0.5 rounded bg-darkbg-900/80 hover:bg-sky-500/20 hover:text-sky-300 border border-darkbg-700 transition">Núñez Feijóo</button>
+            <button type="button" onclick="setQuery('DeepSeek V3 y R1')" class="px-2 py-0.5 rounded bg-darkbg-900/80 hover:bg-brand-500/20 hover:text-brand-300 border border-darkbg-700 transition">DeepSeek V3</button>
+            <button type="button" onclick="setQuery('Acción de SpaceX e IPO')" class="px-2 py-0.5 rounded bg-darkbg-900/80 hover:bg-emerald-500/20 hover:text-emerald-300 border border-darkbg-700 transition">Acción SpaceX</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- Real-time Loading / Stepper Indicator (Hidden by default) -->
+    <div id="loadingStepper" class="hidden rounded-2xl bg-darkbg-800 border border-darkbg-700 p-6 flex flex-col gap-4 shadow-lg animate-pulse">
+      <div class="flex items-center justify-between border-b border-darkbg-700/80 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full border-2 border-brand-500 border-t-transparent animate-spin"></div>
+          <div>
+            <h4 class="font-bold text-sm text-white" id="stepperTitle">Iniciando escaneo multicanal...</h4>
+            <p class="text-xs text-slate-400" id="stepperDetail">Conectando con fuentes de datos de opinión...</p>
+          </div>
+        </div>
+        <span class="text-xs px-2.5 py-1 rounded bg-brand-500/20 text-brand-400 font-mono" id="stepperElapsed">0.0s</span>
+      </div>
+
+      <!-- 3-stage progress bar -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+        <div id="step1" class="flex items-center gap-2 p-2.5 rounded-lg bg-darkbg-900/80 border border-brand-500/40 text-brand-300">
+          <i class="fa-solid fa-satellite-dish"></i>
+          <span>1. Recolección MCP / Redes</span>
+        </div>
+        <div id="step2" class="flex items-center gap-2 p-2.5 rounded-lg bg-darkbg-900/40 border border-darkbg-700 text-slate-500">
+          <i class="fa-solid fa-calculator"></i>
+          <span>2. Cálculo de Sentimiento & NSI</span>
+        </div>
+        <div id="step3" class="flex items-center gap-2 p-2.5 rounded-lg bg-darkbg-900/40 border border-darkbg-700 text-slate-500">
+          <i class="fa-solid fa-brain"></i>
+          <span>3. Redacción del Informe con IA</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard Content Area (Populated on search) -->
+    <div id="resultsDashboard" class="hidden flex flex-col gap-6">
+
+      <!-- Contextual Domain & Dynamic Weighting Banner -->
+      <div class="rounded-xl bg-gradient-to-r from-darkbg-800 via-darkbg-800/90 to-brand-950/30 border border-brand-500/30 p-4 flex flex-wrap items-center justify-between gap-3 shadow-md">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center text-base">
+            <i class="fa-solid fa-scale-balanced"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Dominio Temático:</span>
+              <span id="kpiDomainCategory" class="text-xs font-bold text-white px-2 py-0.5 rounded bg-brand-500/20 border border-brand-500/30">General</span>
+            </div>
+            <p class="text-xs text-slate-300 mt-0.5" id="kpiWeightingExplanation">
+              Ponderación adaptativa aplicada según la naturaleza del tema.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap text-xs text-slate-300" id="weightsChipsContainer">
+          <!-- Weight chips dynamically generated -->
+        </div>
+      </div>
+
+      <!-- Top KPI Metrics Row (5 Metrics) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        
+        <!-- Net Sentiment Index (NSI) -->
+        <div class="rounded-xl bg-darkbg-800 border border-darkbg-700/80 p-5 flex flex-col justify-between shadow-md relative overflow-hidden group">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Índice Neto Sentimiento</span>
+            <div id="nsiBadgeIcon" class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-arrow-trend-up"></i>
+            </div>
+          </div>
+          <div class="my-3">
+            <div class="flex items-baseline gap-2">
+              <span id="kpiNSI" class="text-3xl font-extrabold text-white">+0.0%</span>
+              <span id="kpiNSILabel" class="text-xs font-medium text-emerald-400 px-2 py-0.5 rounded bg-emerald-500/10">Positivo</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">Diferencial entre opiniones favorables y desfavorables</p>
+          </div>
+          <div class="w-full bg-darkbg-900 h-1.5 rounded-full overflow-hidden">
+            <div id="nsiProgressBar" class="h-full bg-emerald-500 transition-all duration-700" style="width: 50%;"></div>
+          </div>
+        </div>
+
+        <!-- Polarization & Social Friction Index -->
+        <div class="rounded-xl bg-darkbg-800 border border-darkbg-700/80 p-5 flex flex-col justify-between shadow-md relative overflow-hidden group">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Polarización & Conflicto</span>
+            <div id="polarizationBadgeIcon" class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center text-sm">
+              <i id="kpiPolarizationIcon" class="fa-solid fa-fire-flame-curved"></i>
+            </div>
+          </div>
+          <div class="my-3">
+            <div class="flex items-baseline gap-2">
+              <span id="kpiPolarizationScore" class="text-3xl font-extrabold text-white">0%</span>
+              <span id="kpiPolarizationBadge" class="text-[10px] font-bold px-2 py-0.5 rounded text-slate-300 bg-slate-700/50">Consenso</span>
+            </div>
+            <p id="kpiPolarizationDesc" class="text-[11px] text-slate-400 mt-1 line-clamp-2">Nivel de enfrentamiento bimodal entre bandos</p>
+          </div>
+          <div class="w-full bg-darkbg-900 h-1.5 rounded-full overflow-hidden">
+            <div id="polarizationProgressBar" class="h-full bg-rose-500 transition-all duration-700" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Total Mentions -->
+        <div class="rounded-xl bg-darkbg-800 border border-darkbg-700/80 p-5 flex flex-col justify-between shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Menciones Extraídas</span>
+            <div class="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-400 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-comments"></i>
+            </div>
+          </div>
+          <div class="my-3">
+            <span id="kpiTotalMentions" class="text-3xl font-extrabold text-white">0</span>
+            <p class="text-[11px] text-slate-400 mt-1">Muestras analizadas en Reddit, Medios y Redes</p>
+          </div>
+          <div class="flex items-center gap-2 text-[11px] text-slate-400">
+            <span class="w-2 h-2 rounded-full bg-brand-400"></span>
+            <span id="kpiSourcesCount">3 Fuentes activas</span>
+          </div>
+        </div>
+
+        <!-- Predominant Tone / Emotion -->
+        <div class="rounded-xl bg-darkbg-800 border border-darkbg-700/80 p-5 flex flex-col justify-between shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tono / Emoción Dominante</span>
+            <div class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-heart-pulse"></i>
+            </div>
+          </div>
+          <div class="my-3">
+            <span id="kpiEmotion" class="text-xl font-bold text-purple-300">Optimismo & Debate</span>
+            <p class="text-[11px] text-slate-400 mt-1">Clima psicológico detectado en los mensajes</p>
+          </div>
+          <div class="text-[11px] text-slate-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-sparkles text-purple-400"></i>
+            <span>NLP Emocional</span>
+          </div>
+        </div>
+
+        <!-- AI Engine Used -->
+        <div class="rounded-xl bg-darkbg-800 border border-darkbg-700/80 p-5 flex flex-col justify-between shadow-md">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Redacción de Informe</span>
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-brain"></i>
+            </div>
+          </div>
+          <div class="my-3">
+            <span id="kpiModelUsed" class="text-base font-bold text-indigo-300 truncate block">Gemini 3.5 Flash Lite</span>
+            <p class="text-[11px] text-slate-400 mt-1">Vía OpenRouter API (Ultra Económico)</p>
+          </div>
+          <div class="flex items-center justify-between text-[11px] text-slate-400">
+            <span>Síntesis Ejecutiva</span>
+            <button onclick="openSettingsModal()" class="text-brand-400 hover:underline">Cambiar</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Sentiment Timeline Evolution Chart -->
+      <div class="rounded-2xl bg-darkbg-800 border border-darkbg-700/80 p-5 flex flex-col shadow-md">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+              <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-sm text-white">Evolución Cronológica del Sentimiento</h3>
+              <p class="text-xs text-slate-400">Trayectoria temporal del Índice Neto de Sentimiento (NSI) a lo largo de las fechas</p>
+            </div>
+          </div>
+          <!-- Trend Badge -->
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400">Tendencia:</span>
+            <span id="kpiTrendBadge" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+              <i id="kpiTrendIcon" class="fa-solid fa-arrow-trend-up"></i>
+              <span id="kpiTrendText">Calculando...</span>
+            </span>
+          </div>
+        </div>
+        <div class="relative w-full h-[220px]">
+          <canvas id="timelineChart"></canvas>
+        </div>
+        <p class="text-[11px] text-slate-400 text-center mt-2">Puntos de inflexión y variación del tono en el periodo seleccionado</p>
+      </div>
+
+      <!-- Visual Charts Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Sentiment Donut Chart -->
+        <div class="rounded-2xl bg-darkbg-800 border border-darkbg-700/80 p-5 flex flex-col shadow-md">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-sm text-white flex items-center gap-2">
+              <i class="fa-solid fa-chart-pie text-brand-400"></i>
+              <span>Distribución de Sentimiento</span>
+            </h3>
+          </div>
+          <div class="relative flex-1 flex items-center justify-center min-h-[220px]">
+            <canvas id="sentimentDonutChart"></canvas>
+          </div>
+          <div class="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-darkbg-700 text-center text-xs">
+            <div>
+              <span class="block text-emerald-400 font-bold" id="pctPos">0%</span>
+              <span class="text-slate-400 text-[10px]">Positivo</span>
+            </div>
+            <div>
+              <span class="block text-slate-300 font-bold" id="pctNeu">0%</span>
+              <span class="text-slate-400 text-[10px]">Neutral</span>
+            </div>
+            <div>
+              <span class="block text-rose-400 font-bold" id="pctNeg">0%</span>
+              <span class="text-slate-400 text-[10px]">Negativo</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sentiment by Platform Bar Chart -->
+        <div class="rounded-2xl bg-darkbg-800 border border-darkbg-700/80 p-5 flex flex-col shadow-md">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-sm text-white flex items-center gap-2">
+              <i class="fa-solid fa-chart-column text-indigo-400"></i>
+              <span>Sentimiento por Plataforma</span>
+            </h3>
+          </div>
+          <div class="relative flex-1 flex items-center justify-center min-h-[220px]">
+            <canvas id="platformBarChart"></canvas>
+          </div>
+          <p class="text-[11px] text-slate-400 text-center mt-2">Comparativa entre Reddit, Prensa y Redes</p>
+        </div>
+
+        <!-- Key Concepts & Arguments Tags -->
+        <div class="rounded-2xl bg-darkbg-800 border border-darkbg-700/80 p-5 flex flex-col shadow-md">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-sm text-white flex items-center gap-2">
+              <i class="fa-solid fa-tags text-purple-400"></i>
+              <span>Términos y Focos Más Debatidos</span>
+            </h3>
+          </div>
+          <div id="keyPhrasesContainer" class="flex flex-wrap gap-2 content-start flex-1">
+            <!-- Dynamically populated -->
+          </div>
+          <div class="mt-4 pt-3 border-t border-darkbg-700 flex items-center justify-between text-[11px] text-slate-400">
+            <span>Frecuencia y polaridad de términos</span>
+            <i class="fa-solid fa-arrow-trend-up text-brand-400"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Split: Executive AI Report & Mentions Explorer -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Executive AI Intelligence Report (7 cols) -->
+        <section class="lg:col-span-7 rounded-2xl bg-darkbg-800 border border-darkbg-700/80 p-6 flex flex-col shadow-xl">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-darkbg-700/80 pb-4 mb-5">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center">
+                <i class="fa-solid fa-file-lines"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-base text-white">Informe Ejecutivo de Inteligencia</h3>
+                <p class="text-xs text-slate-400">Generado y sintetizado por IA</p>
+              </div>
+            </div>
+
+            <!-- Export / Action Buttons -->
+            <div class="flex items-center gap-2">
+              <button onclick="copyReportMarkdown()" class="px-2.5 py-1.5 rounded-lg bg-darkbg-700 hover:bg-darkbg-600 text-slate-200 text-xs font-medium transition flex items-center gap-1.5" title="Copiar Markdown">
+                <i class="fa-regular fa-copy"></i>
+                <span class="hidden sm:inline">Copiar</span>
+              </button>
+              <button onclick="downloadReportMD()" class="px-2.5 py-1.5 rounded-lg bg-darkbg-700 hover:bg-darkbg-600 text-slate-200 text-xs font-medium transition flex items-center gap-1.5" title="Descargar .md">
+                <i class="fa-solid fa-download"></i>
+                <span class="hidden sm:inline">Descargar .md</span>
+              </button>
+              <button onclick="printReportToPDF()" class="px-2.5 py-1.5 rounded-lg bg-darkbg-700 hover:bg-darkbg-600 text-slate-200 text-xs font-medium transition flex items-center gap-1.5" title="Imprimir / Guardar en PDF">
+                <i class="fa-solid fa-file-pdf text-rose-400"></i>
+                <span class="hidden sm:inline">PDF</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Printable Executive Header (Visible only on print/PDF) -->
+          <div id="printExecutiveHeader" class="hidden text-slate-900 border-b-2 border-brand-600 pb-3 mb-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h1 class="text-xl font-extrabold text-brand-700 tracking-tight" id="printHeaderTitle">INFORME EJECUTIVO DE INTELIGENCIA DE OPINIÓN</h1>
+                <p class="text-xs text-slate-600 mt-0.5">OpinionPulse AI • Radar Multicanal de Sentimiento (Reddit, Prensa y Redes)</p>
+              </div>
+              <div class="text-right text-xs text-slate-600">
+                <p id="printHeaderDate">Fecha: 01/09/2026</p>
+                <p id="printHeaderModel">Modelo: Gemini 3.5 Flash Lite</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2 mt-3 pt-2 border-t border-slate-200 text-xs">
+              <div><strong>Tema:</strong> <span id="printHeaderTopic">-</span></div>
+              <div><strong>Dominio:</strong> <span id="printHeaderDomain">General</span></div>
+              <div><strong>Índice Neto Sentimiento:</strong> <span id="printHeaderNSI" class="font-bold text-brand-700">0%</span></div>
+            </div>
+          </div>
+
+          <!-- Markdown Content Body -->
+          <div id="reportMarkdownContainer" class="prose prose-invert max-w-none text-slate-200 text-sm leading-relaxed overflow-y-auto max-h-[800px] pr-2 space-y-4">
+            <!-- Streaming Markdown rendered here -->
+          </div>
+        </section>
+
+        <!-- Right Column: Live Mentions & Quotes Explorer (5 cols) -->
+        <section class="lg:col-span-5 rounded-2xl bg-darkbg-800 border border-darkbg-700/80 p-6 flex flex-col shadow-xl">
+          <div class="flex items-center justify-between border-b border-darkbg-700/80 pb-4 mb-4">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                <i class="fa-solid fa-comments"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-base text-white">Explorador de Menciones</h3>
+                <p class="text-xs text-slate-400">Citas reales con autor y origen</p>
+              </div>
+            </div>
+            <span id="mentionsCountBadge" class="text-xs px-2 py-0.5 rounded-full bg-darkbg-700 text-slate-300 font-semibold">0 citas</span>
+          </div>
+
+          <!-- Mention Filters -->
+          <div class="flex items-center gap-1.5 mb-3 overflow-x-auto text-xs pb-1">
+            <button onclick="filterMentions('all')" id="btnFilterAll" class="px-2.5 py-1 rounded-md bg-brand-600 text-white font-medium">Todos</button>
+            <button onclick="filterMentions('Positivo')" id="btnFilterPos" class="px-2.5 py-1 rounded-md bg-darkbg-700 hover:bg-darkbg-600 text-emerald-400">Positivos</button>
+            <button onclick="filterMentions('Negativo')" id="btnFilterNeg" class="px-2.5 py-1 rounded-md bg-darkbg-700 hover:bg-darkbg-600 text-rose-400">Negativos</button>
+            <button onclick="filterMentions('Neutral')" id="btnFilterNeu" class="px-2.5 py-1 rounded-md bg-darkbg-700 hover:bg-darkbg-600 text-slate-300">Neutrales</button>
+          </div>
+
+          <!-- Mentions Feed List -->
+          <div id="mentionsFeedList" class="flex flex-col gap-3 overflow-y-auto max-h-[740px] pr-1">
+            <!-- Dynamic cards -->
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-darkbg-800 border border-darkbg-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-darkbg-700 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-lg text-white">Ajustes & Configuración de Modelos</h3>
+            <p class="text-xs text-slate-400">OpenRouter API & Servidores MCP</p>
+          </div>
+        </div>
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white text-lg p-1">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Settings Body -->
+      <div class="flex flex-col gap-5 text-sm">
+        
+        <!-- OpenRouter API Key Input -->
+        <div class="flex flex-col gap-2">
+          <label class="font-semibold text-slate-200 flex items-center justify-between">
+            <span>Clave de API de OpenRouter:</span>
+            <span id="keyDetectStatus" class="text-xs text-emerald-400 font-normal">
+              <i class="fa-solid fa-circle-check"></i> Clave detectada automáticamente
+            </span>
+          </label>
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1">
+              <input 
+                type="password" 
+                id="settingApiKey" 
+                placeholder="sk-or-v1-..." 
+                class="w-full pl-3 pr-10 py-2.5 rounded-lg bg-darkbg-900 border border-darkbg-700 focus:border-brand-500 text-white font-mono text-xs outline-none"
+              >
+              <button type="button" onclick="toggleKeyVisibility()" class="absolute right-3 top-2.5 text-slate-400 hover:text-white">
+                <i id="eyeIcon" class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+            <button type="button" onclick="testApiKey()" id="btnTestKey" class="px-3.5 py-2.5 rounded-lg bg-darkbg-700 hover:bg-darkbg-600 text-white text-xs font-semibold whitespace-nowrap transition">
+              <i class="fa-solid fa-vial-circle-check mr-1"></i> Probar Clave
+            </button>
+          </div>
+          <p id="keyTestResult" class="text-xs hidden"></p>
+        </div>
+
+        <!-- Model Selection Section -->
+        <div class="flex flex-col gap-2.5">
+          <label class="font-semibold text-slate-200 flex items-center justify-between">
+            <span>Modelo de IA para Redacción de Informes:</span>
+            <span class="text-xs text-slate-400">Por defecto: Gemini Flash Lite</span>
+          </label>
+
+          <!-- Model Cards Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-64 overflow-y-auto pr-1" id="modelCardsContainer">
+            <!-- Populated dynamically with Gemini Flash Lite, GLM 5.3, DeepSeek, etc. -->
+          </div>
+
+          <!-- Custom Model Slug Input -->
+          <div class="mt-2 pt-2 border-t border-darkbg-700/60 flex flex-col gap-1">
+            <label class="text-xs text-slate-400">O especifica cualquier otro modelo de OpenRouter:</label>
+            <input 
+              type="text" 
+              id="customModelInput" 
+              placeholder="ej. z-ai/glm-5.3-flash, google/gemini-2.5-flash-lite, deepseek/deepseek-chat..." 
+              class="w-full px-3 py-2 rounded-lg bg-darkbg-900 border border-darkbg-700 text-white font-mono text-xs focus:border-brand-500 outline-none"
+            >
+          </div>
+        </div>
+
+        <!-- MCP Extra Settings (Optional) -->
+        <div class="flex flex-col gap-2 pt-3 border-t border-darkbg-700">
+          <label class="font-semibold text-slate-200 flex items-center justify-between">
+            <span>Conectores MCP Opcionales:</span>
+            <span class="text-xs text-slate-400">Modo scraping directo gratuito activo</span>
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <input type="password" id="settingExaKey" placeholder="Exa AI API Key (Opcional)" class="px-3 py-2 rounded-lg bg-darkbg-900 border border-darkbg-700 text-white font-mono outline-none">
+            <input type="password" id="settingApifyKey" placeholder="Apify Token (Opcional)" class="px-3 py-2 rounded-lg bg-darkbg-900 border border-darkbg-700 text-white font-mono outline-none">
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex items-center justify-end gap-3 border-t border-darkbg-700 pt-4">
+        <button onclick="closeSettingsModal()" class="px-4 py-2 rounded-lg bg-darkbg-700 hover:bg-darkbg-600 text-slate-300 font-medium text-xs transition">
+          Cancelar
+        </button>
+        <button onclick="saveSettings()" class="px-5 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs transition shadow-lg shadow-brand-600/30">
+          Guardar Ajustes
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Help & Guide Modal (Nivel Bachillerato) -->
+  <div id="helpModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-darkbg-800 border border-darkbg-700 rounded-2xl max-w-3xl w-full p-6 shadow-2xl flex flex-col gap-5 max-h-[90vh] overflow-y-auto">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-darkbg-700 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-brand-500/20">
+            <i class="fa-solid fa-graduation-cap text-lg"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-lg text-white">Guía de Ayuda: ¿Cómo funciona OpinionPulse AI?</h3>
+            <p class="text-xs text-slate-400">Explicación clara y paso a paso de toda la tecnología y la ponderación</p>
+          </div>
+        </div>
+        <button onclick="closeHelpModal()" class="text-slate-400 hover:text-white text-lg p-1.5 rounded-lg hover:bg-darkbg-700 transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Help Body Sections -->
+      <div class="flex flex-col gap-6 text-sm text-slate-300 leading-relaxed pr-1">
+
+        <!-- 1. ¿Qué hace la app? -->
+        <div class="p-4 rounded-xl bg-darkbg-900/80 border border-darkbg-700/80 flex flex-col gap-2">
+          <h4 class="font-bold text-white text-base flex items-center gap-2 text-brand-400">
+            <i class="fa-solid fa-compass"></i> 1. ¿Qué hace esta aplicación en lenguaje sencillo?
+          </h4>
+          <p>
+            Imagina que quieres saber <strong>qué opina el mundo</strong> sobre un tema (por ejemplo, <em>"el lanzamiento del nuevo iPhone"</em> o <em>"la acción de SpaceX"</em>). 
+            En lugar de pasar 5 horas buscando en Google, leyendo hilos interminables de Reddit o revisando tweets, <strong>OpinionPulse AI hace todo ese trabajo por ti en 10 segundos</strong>:
+          </p>
+          <ol class="list-decimal list-inside space-y-1 text-slate-300 text-xs pl-2 pt-1 font-medium">
+            <li><strong>Rastrea</strong> comentarios y noticias reales en internet en directo.</li>
+            <li><strong>Calcula</strong> si la gente está contenta, enfadada, decepcionada o neutral.</li>
+            <li><strong>Aplica una ponderación inteligente</strong> según el tipo de tema (económico, tecnológico, entretenimiento, etc.).</li>
+            <li><strong>Una Inteligencia Artificial (OpenRouter)</strong> redacta un informe ejecutivo con conclusiones, puntos positivos, críticas y recomendaciones.</li>
+          </ol>
+        </div>
+
+        <!-- 2. ¿Cómo funciona la Ponderación Inteligente? (El Secreto) -->
+        <div class="p-4 rounded-xl bg-darkbg-900/80 border border-brand-500/30 flex flex-col gap-3">
+          <div class="flex items-center gap-2 text-brand-400 font-bold text-base">
+            <i class="fa-solid fa-scale-balanced text-lg"></i>
+            <h4>2. ¿Cómo y por qué ponderamos la información según el tema?</h4>
+          </div>
+          <p class="text-xs text-slate-300">
+            <strong class="text-white">La regla de oro:</strong> No todas las opiniones valen lo mismo en todos los temas.
+          </p>
+          <div class="p-3 rounded-lg bg-darkbg-800/80 border border-slate-700 text-xs italic text-slate-200">
+            💡 <strong>Analogía cotidiana:</strong> Si quieres saber si una medicina es eficaz, le preguntas a los médicos y a los estudios científicos (mucha autoridad), no a un meme de TikTok. Pero si quieres saber si una canción es pegadiza o una película gusta, las redes sociales son el mejor termómetro del mundo.
+          </div>
+
+          <p class="text-xs font-semibold text-white mt-1">Por eso la app clasifica el tema y reparte el peso así:</p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+            <!-- Caso Finanzas -->
+            <div class="p-3 rounded-lg bg-darkbg-800 border border-darkbg-700 flex flex-col gap-1.5">
+              <span class="font-bold text-emerald-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-line"></i> Finanzas y Economía (ej. Acción SpaceX, Tesla, Cripto)
+              </span>
+              <ul class="text-slate-300 space-y-1 text-[11px] list-disc list-inside">
+                <li><strong class="text-white">Prensa Económica (45%):</strong> Bloomberg, Expansión, etc. Aportan datos de balances y auditorías reales para evitar rumores falsos.</li>
+                <li><strong class="text-white">Reddit (35%):</strong> Foros como <code>r/stocks</code> o <code>r/investing</code> reflejan el sentimiento real de los inversores minoristas.</li>
+                <li><strong class="text-white">X / Twitter (20%):</strong> Alertas de última hora, pero con peso moderado para filtrar bots y pánicos temporales.</li>
+              </ul>
+            </div>
+
+            <!-- Caso Tecnología -->
+            <div class="p-3 rounded-lg bg-darkbg-800 border border-darkbg-700 flex flex-col gap-1.5">
+              <span class="font-bold text-indigo-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-laptop-code"></i> Tecnología y Software (ej. DeepSeek, IA, iPhone)
+              </span>
+              <ul class="text-slate-300 space-y-1 text-[11px] list-disc list-inside">
+                <li><strong class="text-white">Reddit Técnico (45%):</strong> Comunidades de desarrolladores que prueban el código y la batería a fondo sin intereses comerciales.</li>
+                <li><strong class="text-white">X / Twitter (30%):</strong> Feedback inmediato de fundadores y programadores expertos.</li>
+                <li><strong class="text-white">Prensa Digital (25%):</strong> Contexto general y fechas oficiales.</li>
+              </ul>
+            </div>
+
+            <!-- Caso Entretenimiento -->
+            <div class="p-3 rounded-lg bg-darkbg-800 border border-darkbg-700 flex flex-col gap-1.5">
+              <span class="font-bold text-purple-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-film"></i> Entretenimiento & Marcas (ej. Películas, Música, Juegos)
+              </span>
+              <ul class="text-slate-300 space-y-1 text-[11px] list-disc list-inside">
+                <li><strong class="text-white">Redes Sociales (45%):</strong> Reacción masiva, viralidad y tendencias del público general.</li>
+                <li><strong class="text-white">Reddit de Fans (35%):</strong> Reseñas minuciosas de la comunidad.</li>
+                <li><strong class="text-white">Crítica de Medios (20%):</strong> Puntuaciones de prensa especializada.</li>
+              </ul>
+            </div>
+
+            <!-- Multiplicador por Interacción -->
+            <div class="p-3 rounded-lg bg-darkbg-800 border border-darkbg-700 flex flex-col gap-1.5">
+              <span class="font-bold text-amber-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-fire"></i> El Factor de Tracción (Upvotes y Citas)
+              </span>
+              <p class="text-[11px] text-slate-300">
+                Dentro de cada red, un debate con <strong>2.000 votos a favor y 300 comentarios</strong> tiene mucho más peso en el cálculo que un mensaje suelto con 0 respuestas, porque representa el consenso de miles de personas.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. ¿Cómo se califica científicamente una noticia? (Nivel Bachillerato) -->
+        <div class="p-4 rounded-xl bg-darkbg-900/80 border border-brand-500/30 flex flex-col gap-3">
+          <div class="flex items-center gap-2 text-brand-400 font-bold text-base">
+            <i class="fa-solid fa-microscope text-lg"></i>
+            <h4>3. ¿Cómo califica la app científicamente si una noticia es Positiva, Negativa o Neutral?</h4>
+          </div>
+          <p class="text-xs text-slate-300">
+            A diferencia de los programas antiguos que solo cuentan si hay más palabras "buenas" o "malas", <strong>OpinionPulse AI utiliza Procesamiento del Lenguaje Natural (NLP) avanzado</strong> basado en 3 reglas lingüísticas y matemáticas:
+          </p>
+
+          <!-- 3.1 El problema de las palabras aisladas y los N-gramas -->
+          <div class="p-3 rounded-lg bg-darkbg-800 border border-darkbg-700 flex flex-col gap-1.5 text-xs">
+            <span class="font-bold text-emerald-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-code-merge"></i> Regla 1: N-Gramas y Contexto (Evitar falsos negativos)
+            </span>
+            <p class="text-slate-300 text-[11px] leading-relaxed">
+              Palabras como <em>"caída"</em> o <em>"recorte"</em> suenan negativas de forma aislada. Sin embargo, en economía o tecnología cambia todo:
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] mt-1 font-mono">
+              <div class="p-2 rounded bg-darkbg-900 border border-emerald-500/30 text-emerald-300">
+                ✔️ "Caída de la inflación" → <strong>+1.50 (Muy Positivo)</strong>
+              </div>
+              <div class="p-2 rounded bg-darkbg-900 border border-emerald-500/30 text-emerald-300">
+                ✔️ "Recorta pérdidas / Supera previsiones" → <strong>+1.60 (Positivo)</strong>
+              </div>
+              <div class="p-2 rounded bg-darkbg-900 border border-rose-500/30 text-rose-300">
+                ❌ "Frena el crecimiento" → <strong>-1.50 (Negativo)</strong>
+              </div>
+              <div class="p-2 rounded bg-darkbg-900 border border-rose-500/30 text-rose-300">
+                ❌ "Brecha de seguridad crítica" → <strong>-1.80 (Grave)</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3.2 Cláusulas adversativas ('pero', 'sin embargo') -->
+          <div class="p-3 rounded-lg bg-darkbg-800 border border-darkbg-700 flex flex-col gap-1.5 text-xs">
+            <span class="font-bold text-sky-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-scale-unbalanced-flip"></i> Regla 2: Cláusulas con "Pero" o "Sin embargo" (La Conclusión Manda)
+            </span>
+            <p class="text-slate-300 text-[11px] leading-relaxed">
+              En lengua española y lingüística computacional, cuando alguien usa la palabra <strong>"pero"</strong>, lo importante es lo que dice al final:
+            </p>
+            <div class="p-2.5 rounded bg-darkbg-900 border border-slate-700 text-[11px] text-slate-200 italic">
+              "El coche tiene un diseño <strong>muy bonito y elegante</strong> (30% peso), <strong class="text-amber-400">PERO</strong> la batería <strong>no dura nada y es carísimo</strong> (70% peso dominante)."
+            </div>
+            <p class="text-slate-400 text-[10px]">
+              → La app reconoce el "pero", le da un <strong>70% de peso a la segunda parte</strong> y califica la opinión como <strong>Negativa (-0.40)</strong>.
+            </p>
+          </div>
+
+          <!-- 3.3 Intensificadores y Confianza Estadística -->
+          <div class="p-3 rounded-lg bg-darkbg-800 border border-darkbg-700 flex flex-col gap-1.5 text-xs">
+            <span class="font-bold text-purple-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-chart-pie"></i> Regla 3: Intensificadores y Confianza Estadística
+            </span>
+            <ul class="text-slate-300 space-y-1 text-[11px] list-disc list-inside">
+              <li><strong>Multiplicadores:</strong> <em>"Increíblemente rápido"</em> multiplica la nota por <strong>1.7x</strong>, mientras que <em>"apenas útil"</em> la atenúa a <strong>0.5x</strong>.</li>
+              <li><strong>Negaciones inteligentes:</strong> <em>"No es malo"</em> no significa que sea perfecto; la app lo gradúa como ligeramente favorable (+0.50).</li>
+              <li><strong>Índice de Confianza (ej. Conf: 88%):</strong> Evalúa si el titular aporta pruebas claras o si es una frase ambigua.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 4. ¿Por qué en temas como Trump, Sánchez o Feijóo el promedio puede dar 0% pero la polarización es del 100%? -->
+        <div class="p-4 rounded-xl bg-darkbg-900/80 border border-rose-500/30 flex flex-col gap-3">
+          <div class="flex items-center gap-2 text-rose-400 font-bold text-base">
+            <i class="fa-solid fa-fire-flame-curved text-lg"></i>
+            <h4>4. ¿Por qué en temas como Trump, Sánchez o Feijóo el NSI puede dar 0% pero la Polarización es del 100%?</h4>
+          </div>
+          <p class="text-xs text-slate-300">
+            Este es uno de los mayores retos de la ciencia política y de la estadística: <strong>la ilusión del promedio neutro</strong>.
+          </p>
+
+          <div class="p-3 rounded-lg bg-darkbg-800/90 border border-slate-700 text-xs text-slate-200">
+            ⚽ <strong>La analogía del Clásico Real Madrid vs FC Barcelona:</strong><br>
+            Si en un estadio hay 45.000 aficionados del Madrid eufóricos gritando (+100) y 45.000 del Barça enfadados gritando (-100), el promedio matemático es <strong>0 (cero)</strong>. 
+            ¿Significa que el estadio está en silencio o es neutral? <strong>¡Todo lo contrario! Está ardiendo de pasión y enfrentamiento.</strong>
+          </div>
+
+          <p class="text-xs text-slate-300">
+            Por eso la app incorpora el <strong>Índice de Polarización & Conflicto (PI)</strong>:
+          </p>
+          <ul class="text-xs space-y-1.5 pl-2 list-disc list-inside text-slate-300">
+            <li><strong class="text-rose-400">🔥 75% a 100% (Polarización Extrema / Guerra de Trincheras):</strong> Ocurre con figuras como <em>Donald Trump, Pedro Sánchez o Alberto Núñez Feijóo</em>. El debate no tiene término medio: hay un bando convencido de su apoyo y otro bando ferozmente crítico. La app lo identifica y la IA desglosa las tesis de cada bando sin diluirlas.</li>
+            <li><strong class="text-amber-400">⚡ 50% a 74% (Fuerte Enfrentamiento):</strong> Dos bloques muy definidos con tensión habitual.</li>
+            <li><strong class="text-emerald-400">🤝 0% a 24% (Consenso General):</strong> La inmensa mayoría del público opina en la misma dirección.</li>
+          </ul>
+        </div>
+
+        <!-- 5. ¿Qué significan el NSI y los Gráficos? -->
+        <div class="p-4 rounded-xl bg-darkbg-900/80 border border-darkbg-700/80 flex flex-col gap-3">
+          <h4 class="font-bold text-white text-base flex items-center gap-2 text-emerald-400">
+            <i class="fa-solid fa-chart-pie"></i> 5. ¿Cómo leer el Índice Neto de Sentimiento (NSI) y los Gráficos?
+          </h4>
+          <p class="text-xs text-slate-300">
+            El <strong>Net Sentiment Index (NSI)</strong> es la nota que le pone internet al tema, en una escala que va del <strong>-100% (rechazo total)</strong> al <strong>+100% (aprobación unánime)</strong>:
+          </p>
+          <div class="grid grid-cols-3 gap-2 text-center text-xs">
+            <div class="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+              <span class="block font-bold text-emerald-400">+15% a +100%</span>
+              <span class="text-[11px] text-slate-300">Mayoría Positiva / Entusiasmo</span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/30">
+              <span class="block font-bold text-amber-400">-14% a +14%</span>
+              <span class="text-[11px] text-slate-300">Opinión Dividida / Debate Mixto</span>
+            </div>
+            <div class="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30">
+              <span class="block font-bold text-rose-400">-15% a -100%</span>
+              <span class="text-[11px] text-slate-300">Mayoría Crítica / Descontento</span>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400">
+            En el panel verás también el <strong>Gráfico Donut</strong> (porcentaje de comentarios alegres vs negativos vs neutros) y el <strong>Gráfico de Barras</strong> que te muestra si la prensa y Reddit opinan lo mismo o si están enfrentados.
+          </p>
+        </div>
+
+        <!-- 6. El Factor Tiempo y la Evolución Cronológica -->
+        <div class="p-4 rounded-xl bg-darkbg-900/80 border border-darkbg-700/80 flex flex-col gap-3">
+          <h4 class="font-bold text-white text-base flex items-center gap-2 text-sky-400">
+            <i class="fa-solid fa-chart-line"></i> 6. ¿Cómo influye el factor tiempo y la evolución histórica?
+          </h4>
+          <p class="text-xs text-slate-300">
+            La opinión pública <strong>no es una foto fija, es una película en movimiento</strong>. Una empresa o un producto puede empezar con una opinión muy positiva y, tras un fallo o polémica, caer en picado (o al revés, mejorar tras una actualización).
+          </p>
+          <div class="p-3 rounded-lg bg-darkbg-800 border border-slate-700 text-xs text-slate-200">
+            ⏳ <strong>Selector de Periodo:</strong> Puedes elegir analizar las <em>Últimas 24 horas</em> (viralidad inmediata), los <em>Últimos 7 días</em>, el <em>Último mes</em> o el <em>Histórico completo</em>.
+          </div>
+          <p class="text-xs text-slate-300">
+            El <strong>Gráfico de Línea Temporal (Timeline)</strong> te muestra exactamente la trayectoria de la curva y el detector de <strong>Tendencia</strong> te avisa si el sentimiento está en <strong class="text-emerald-400">fase alcista</strong> (ganando adeptos) o en <strong class="text-rose-400">fase bajista</strong> (aumento de quejas).
+          </p>
+        </div>
+
+        <!-- 7. ¿Qué es MCP y qué son los Modelos de OpenRouter? -->
+        <div class="p-4 rounded-xl bg-darkbg-900/80 border border-darkbg-700/80 flex flex-col gap-3">
+          <h4 class="font-bold text-white text-base flex items-center gap-2 text-purple-400">
+            <i class="fa-solid fa-microchip"></i> 7. ¿Qué es el protocolo MCP y qué modelo de IA redacta el informe?
+          </h4>
+          <p class="text-xs text-slate-300">
+            <strong>MCP (Model Context Protocol):</strong> Es un estándar tecnológico que funciona como un "puente" que conecta la Inteligencia Artificial con bases de datos vivas de internet (Reddit, noticias, redes sociales y buscadores neuronales) sin inventarse información.
+          </p>
+          <p class="text-xs text-slate-300">
+            Para redactar el informe final, la app se conecta a <strong>OpenRouter</strong> (una pasarela que te permite usar los mejores modelos de IA del mundo a precios casi gratuitos):
+          </p>
+          <ul class="text-xs space-y-1.5 pl-2 list-disc list-inside">
+            <li><strong class="text-white">Gemini 3.5 Flash Lite (Por Defecto):</strong> El modelo más moderno, rápido y económico de Google (~$0.075 por millón de palabras) con 1M de memoria.</li>
+            <li><strong class="text-white">GLM 5.3 Flash & GLM 5.2:</strong> Modelos analíticos avanzados de Zhipu AI, excelentes para razonamiento complejo y muy baratos.</li>
+            <li><strong class="text-white">DeepSeek V3, Llama 3.3 70B y Mistral:</strong> Otras alternativas potentes que puedes cambiar cuando quieras desde la pestaña de <em>Ajustes</em>.</li>
+          </ul>
+        </div>
+
+        <!-- 8. Transparencia: ¿Hay información prefabricada o 'hardcodeada'? -->
+        <div class="p-4 rounded-xl bg-darkbg-900/80 border border-emerald-500/30 flex flex-col gap-3">
+          <h4 class="font-bold text-white text-base flex items-center gap-2 text-emerald-400">
+            <i class="fa-solid fa-shield-halved"></i> 8. Transparencia: ¿Los datos son en directo o hay opiniones prefijadas?
+          </h4>
+          <p class="text-xs text-slate-300">
+            <strong class="text-white">100% Datos Vivos y Reales:</strong> La aplicación <strong>NO tiene opiniones, notas ni respuestas prefabricadas</strong> sobre ninguna persona, político o empresa.
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <div class="p-2.5 rounded-lg bg-darkbg-800 border border-slate-700 flex flex-col gap-1">
+              <span class="font-bold text-emerald-300 flex items-center gap-1.5 text-[11px]">
+                <i class="fa-solid fa-globe"></i> Información en Tiempo Real (Dinámica)
+              </span>
+              <p class="text-[11px] text-slate-300">
+                Cada noticia, hilo de Reddit o tweet se descarga de internet en el mismo segundo en que pulsas el botón. Puedes hacer clic en los enlaces del <em>Explorador de Menciones</em> para verificar las fuentes originales.
+              </p>
+            </div>
+            <div class="p-2.5 rounded-lg bg-darkbg-800 border border-slate-700 flex flex-col gap-1">
+              <span class="font-bold text-indigo-300 flex items-center gap-1.5 text-[11px]">
+                <i class="fa-solid fa-calculator"></i> Motor Algorítmico (Reglas de Cálculo)
+              </span>
+              <p class="text-[11px] text-slate-300">
+                Lo único programado en la app son las reglas científicas de lingüística (ej. intensificadores, fórmulas matemáticas de polarización y ponderación de canales según el tema).
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. Consejos útiles -->
+        <div class="p-4 rounded-xl bg-darkbg-900/80 border border-darkbg-700/80 flex flex-col gap-2">
+          <h4 class="font-bold text-white text-base flex items-center gap-2 text-blue-400">
+            <i class="fa-solid fa-lightbulb"></i> 9. Consejos para obtener los mejores informes
+          </h4>
+          <ul class="text-xs text-slate-300 space-y-1.5 pl-2 list-disc list-inside">
+            <li><strong>Sé específico con el tema:</strong> Escribir <em>"Lanzamiento Nvidia RTX 5090"</em> dará un informe mucho más preciso que solo escribir <em>"Nvidia"</em>.</li>
+            <li><strong>Usa los filtros de fuentes:</strong> Si solo te interesa lo que dice la prensa o lo que dice la comunidad de Reddit, puedes desmarcar las otras casillas antes de buscar.</li>
+            <li><strong>Exporta tu informe:</strong> Puedes hacer clic en <strong>Copiar</strong>, <strong>Descargar .md</strong> o <strong>PDF</strong> para guardar el informe en tu ordenador o adjuntarlo a un trabajo o presentación.</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="flex items-center justify-between border-t border-darkbg-700 pt-4">
+        <span class="text-xs text-slate-500">OpinionPulse AI • Radar de Opinión Multicanal</span>
+        <button onclick="closeHelpModal()" class="px-5 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs transition shadow-md shadow-brand-600/30">
+          ¡Entendido!
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- History Drawer -->
+  <div id="historyDrawer" class="fixed inset-y-0 right-0 z-50 w-full sm:w-96 bg-darkbg-800 border-l border-darkbg-700 p-6 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col gap-4">
+    <div class="flex items-center justify-between border-b border-darkbg-700 pb-3">
+      <div class="flex items-center gap-2">
+        <i class="fa-solid fa-clock-rotate-left text-brand-400"></i>
+        <h3 class="font-bold text-base text-white">Historial de Informes</h3>
+      </div>
+      <button onclick="toggleHistoryDrawer()" class="text-slate-400 hover:text-white p-1">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- History List -->
+    <div id="historyListContainer" class="flex-1 overflow-y-auto flex flex-col gap-3 pr-1">
+      <!-- Dynamically filled -->
+      <p class="text-xs text-slate-500 text-center py-6">Cargando historial...</p>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 hidden px-4 py-3 rounded-xl bg-darkbg-700 border border-slate-600 text-white text-xs font-medium shadow-2xl flex items-center gap-2 transition-all">
+    <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span id="toastMsg">Mensaje</span>
+  </div>
+
+  <!-- Custom App JS -->
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

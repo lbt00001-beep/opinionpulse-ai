@@ -1,0 +1,209 @@
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(17, 24, 39, 0.6);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(55, 65, 81, 0.8);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(14, 165, 233, 0.7);
+}
+
+/* Glassmorphism effects */
+.glass-panel {
+  background: rgba(17, 24, 39, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Prose Markdown custom styling for executive report */
+.prose h1 {
+  color: #38bdf8 !important;
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  margin-top: 1.2rem !important;
+  margin-bottom: 0.8rem !important;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+  padding-bottom: 0.5rem;
+}
+.prose h2 {
+  color: #e2e8f0 !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 0.6rem !important;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.prose h3 {
+  color: #93c5fd !important;
+  font-size: 1.05rem !important;
+  font-weight: 600 !important;
+  margin-top: 1rem !important;
+  margin-bottom: 0.4rem !important;
+}
+.prose p {
+  color: #cbd5e1 !important;
+  line-height: 1.65 !important;
+  margin-bottom: 0.8rem !important;
+}
+.prose ul, .prose ol {
+  margin-left: 1.25rem !important;
+  margin-bottom: 0.8rem !important;
+  list-style-type: disc !important;
+}
+.prose li {
+  color: #cbd5e1 !important;
+  margin-bottom: 0.35rem !important;
+}
+.prose strong {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+.prose blockquote {
+  border-left: 4px solid #0ea5e9 !important;
+  background: rgba(14, 165, 233, 0.06);
+  padding: 0.6rem 1rem !important;
+  border-radius: 0 0.5rem 0.5rem 0;
+  margin: 0.8rem 0 !important;
+}
+
+/* ================================================================
+   PROFESSIONAL PRINT & PDF STYLESHEET (NO CLIPPING, MULTI-PAGE)
+   ================================================================ */
+@media print {
+  @page {
+    margin: 1.8cm 1.5cm;
+    size: A4 portrait;
+  }
+  
+  html, body {
+    background: #ffffff !important;
+    color: #111827 !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    font-size: 11pt !important;
+    line-height: 1.55 !important;
+  }
+
+  /* Hide interactive chrome, forms, drawer, modals, buttons and sidebars */
+  header, 
+  #searchForm, 
+  #loadingStepper, 
+  #historyDrawer, 
+  #settingsModal, 
+  #helpModal, 
+  #toast, 
+  .no-print, 
+  button,
+  .lg\:col-span-5, 
+  #keyPhrasesContainer,
+  #weightsChipsContainer,
+  .grid-cols-1.lg\:grid-cols-3,
+  .grid.grid-cols-1.sm\:grid-cols-2.lg\:grid-cols-4 {
+    display: none !important;
+  }
+
+  /* Force dashboard, main container and report box to expand completely */
+  #resultsDashboard,
+  main,
+  section,
+  .lg\:col-span-7,
+  #reportMarkdownContainer,
+  .prose {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Executive Print Header */
+  #printExecutiveHeader {
+    display: block !important;
+    border-bottom: 2px solid #0284c7 !important;
+    padding-bottom: 12pt !important;
+    margin-bottom: 18pt !important;
+  }
+
+  /* Typography for high quality PDF output */
+  .prose h1 {
+    color: #0369a1 !important;
+    font-size: 18pt !important;
+    font-weight: 800 !important;
+    page-break-after: avoid;
+    break-after: avoid;
+    margin-top: 14pt !important;
+    margin-bottom: 10pt !important;
+    border-bottom: 1px solid #cbd5e1 !important;
+    padding-bottom: 4pt !important;
+  }
+  .prose h2 {
+    color: #0f172a !important;
+    font-size: 13.5pt !important;
+    font-weight: 700 !important;
+    page-break-after: avoid;
+    break-after: avoid;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-top: 16pt !important;
+    margin-bottom: 8pt !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding-bottom: 3pt !important;
+  }
+  .prose h3 {
+    color: #1e293b !important;
+    font-size: 11.5pt !important;
+    font-weight: 600 !important;
+    page-break-after: avoid;
+    break-after: avoid;
+    margin-top: 12pt !important;
+    margin-bottom: 5pt !important;
+  }
+  .prose p, .prose li {
+    color: #334155 !important;
+    font-size: 10pt !important;
+    line-height: 1.6 !important;
+    orphans: 3;
+    widows: 3;
+    page-break-inside: auto;
+    break-inside: auto;
+  }
+  .prose ul, .prose ol {
+    margin-left: 18pt !important;
+    margin-bottom: 10pt !important;
+  }
+  .prose li {
+    margin-bottom: 4pt !important;
+  }
+  .prose strong {
+    color: #0f172a !important;
+    font-weight: 700 !important;
+  }
+  .prose blockquote {
+    border-left: 3px solid #0284c7 !important;
+    background: #f8fafc !important;
+    color: #334155 !important;
+    padding: 8pt 12pt !important;
+    margin: 10pt 0 !important;
+    border-radius: 4pt;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
