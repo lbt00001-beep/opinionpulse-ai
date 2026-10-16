@@ -18,7 +18,7 @@ from app.services.openrouter_client import (
     generate_openrouter_report, stream_openrouter_report, test_openrouter_key
 )
 
-app = FastAPI(title="Opinion & Sentiment Intelligence Hub", version="1.0.0")
+app = FastAPI(title="Opinion & Sentiment Intelligence Hub", version="1.0.1")
 
 # Mount static and template paths
 static_dir = BASE_DIR / "app" / "static"
